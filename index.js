@@ -53,10 +53,12 @@ async function getStats(post) {
 
   const likes = await page.$$eval('[role=button]', els => els.filter(el => /[0-9]+ likes/.test(el.innerText)).map(el => el.innerText)[0]);
   const hashtags = await page.$$eval('[href*="/explore/tags"]', els => els.map(el => el.innerText));
+  const datetime = await page.$eval('[datetime]', el => el.getAttribute('datetime'));
 
   return {
     likes: likes.match(/^([0-9]+)/)[1],
-    hashtags
+    hashtags,
+    datetime
   };
 }
 
