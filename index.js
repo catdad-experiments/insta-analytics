@@ -23,10 +23,10 @@ const getBrowser = cache(async function () {
 const getPage = cache(async function () {
   const browser = await getBrowser();
   return await browser.newPage();
-}());
+});
 
 async function goto(url) {
-  const page = getPage();
+  const page = await getPage();
   await page.goto(url);
 
   return page;
