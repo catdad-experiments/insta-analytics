@@ -1,0 +1,25 @@
+{
+  "name": "insta-analytics",
+  "version": "1.0.0",
+  "description": "insta-analytics",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catdad-experiments/insta-analytics.git"
+  },
+  "author": "Kiril Vatev <vatev.1@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/catdad-experiments/insta-analytics/issues"
+  },
+  "homepage": "https://github.com/catdad-experiments/insta-analytics#readme",
+  "dependencies": {
+    "puppeteer": "^1.6.2"
+  },
+  "devDependencies": {
+    "eslint": "^5.3.0"
+  }
+}
