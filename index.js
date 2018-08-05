@@ -1,5 +1,7 @@
 const puppeteer = require('puppeteer');
 
+let open = false;
+
 const cache = function (func) {
   let val;
 
@@ -15,6 +17,8 @@ const cache = function (func) {
 };
 
 const getBrowser = cache(async function () {
+  open = true;
+
   return await puppeteer.launch({
     headless: false
   });
@@ -66,6 +70,10 @@ async function getStats(post) {
 }
 
 async function done() {
+  if (!open) {
+    return;
+  }
+
   const browser = await getBrowser();
   await browser.close();
 }
