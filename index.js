@@ -59,7 +59,7 @@ async function getStats(post) {
   return {
     post,
     link,
-    likes: likes.match(/^([0-9]+)/)[1],
+    likes: Number(likes.match(/^([0-9]+)/)[1]),
     hashtags,
     datetime
   };
