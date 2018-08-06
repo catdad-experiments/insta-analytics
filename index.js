@@ -29,6 +29,51 @@ const getPage = cache(async function () {
   return await browser.newPage();
 });
 
+async function scrollAndLoad(page) {
+  const eventPromise = new Promise(resolve => {
+    let openReqs = 0;
+    let doneTimer;
+
+    function onReq() {
+      clearTimeout(doneTimer);
+
+      openReqs += 1;
+    }
+
+    function onRes() {
+      openReqs -= 1;
+
+      if (openReqs < 1) {
+        onZero();
+      }
+    }
+
+    function onZero() {
+      if (doneTimer) {
+        clearTimeout(doneTimer);
+      }
+
+      doneTimer = setTimeout(() => {
+        page.removeListener('request', onReq);
+        page.removeListener('response', onRes);
+
+        resolve();
+      }, 500);
+    }
+
+    page.on('request', onReq);
+    page.on('response', onRes);
+
+    doneTimer = setTimeout(() => onZero(), 1000);
+  });
+
+  const pagePromise = page.evaluate(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+  });
+
+  await Promise.all([eventPromise, pagePromise]);
+}
+
 async function goto(url) {
   const page = await getPage();
   await page.goto(url);
@@ -36,20 +81,41 @@ async function goto(url) {
   return page;
 }
 
-async function getPosts(username) {
+async function getPosts(username, count = 12) {
   const page = await goto(`https://www.instagram.com/${username}/`);
+  let postCount = null;
+  let uniquePosts = new Set();
 
-  const posts = await page.evaluate(() => {
-    const elems = document.querySelectorAll('[href*="/p/"]');
-    const links = [].slice.call(elems).map(el => el.href);
-    return links;
-  });
+  async function getPostsRecursive() {
+    const posts = await page.evaluate(() => {
+      const elems = document.querySelectorAll('[href*="/p/"]');
+      const links = [].slice.call(elems).map(el => el.href);
+      return links;
+    });
 
-  const ids = posts.map(p => {
-    return p.match(/\/p\/([^/]+)/)[1];
-  });
+    posts.map(p => {
+      return p.match(/\/p\/([^/]+)/)[1];
+    }).forEach(p => uniquePosts.add(p));
 
-  return ids;
+    if (postCount === null) {
+      postCount = uniquePosts.size;
+    } else if (postCount === uniquePosts.size) {
+      // there are no more posts, so return the ones
+      // we have even if they are less
+      return;
+    }
+
+    postCount = uniquePosts.size;
+
+    if (postCount < count) {
+      await scrollAndLoad(page);
+      return await getPostsRecursive();
+    }
+  }
+
+  await getPostsRecursive();
+
+  return Array.from(uniquePosts).slice(0, count);
 }
 
 async function getStats(post) {
