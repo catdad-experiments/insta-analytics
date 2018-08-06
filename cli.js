@@ -85,6 +85,8 @@ async function hashtagStats() {
       rank: Math.round(likes + (likes * posts * 0.1))
     };
   }).sort((a, b) => {
+    // highest rank at the end, so that it can be
+    // read easily in terminal
     return a.rank - b.rank || a.likes - b.likes;
   }).forEach(rank => {
     table.row([
