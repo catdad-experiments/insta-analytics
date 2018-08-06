@@ -5,10 +5,13 @@ const path = require('path');
 const argv = require('yargs')
 .option('command', { type: 'string' })
 .option('username', { type: 'string' })
+.option('count', { type: 'number', default: 12 })
 .argv;
 
 const root = require('rootrequire');
 const fs = require('fs-extra');
+const fancyTable = require('fancy-text-table');
+const chalk = require('chalk');
 const lib = require('.');
 
 const dataDir = path.resolve(root, 'data/posts');
@@ -31,10 +34,10 @@ async function getPostObj(post) {
   return Object.assign({ post }, await lib.getStats(post));
 }
 
-async function updatePosts(username) {
+async function updatePosts(username, count) {
   await fs.mkdirp(dataDir);
 
-  const posts = await lib.getPosts(username);
+  const posts = await lib.getPosts(username, count);
 
   await map(posts, async post => {
     await fs.writeFile(
@@ -60,17 +63,42 @@ async function hashtagStats() {
     return memo;
   }, {});
 
+  const table = fancyTable();
+  const headings = [
+    chalk.bold('hashtag'),
+    chalk.bold('average likes'),
+    chalk.bold('posts'),
+    chalk.bold('rank'),
+  ];
+
+  table.row(headings);
+  table.line();
+
   Object.keys(hashtags).map(tag => {
+    const likes = Math.round(mean(...hashtags[tag]));
+    const posts = hashtags[tag].length;
+
     return {
-      hashtag: tag,
-      likes: Math.round(mean(...hashtags[tag])),
-      posts: hashtags[tag].length
+      tag,
+      likes,
+      posts,
+      rank: Math.round(likes + (likes * posts * 0.1))
     };
   }).sort((a, b) => {
-    return a.likes - b.likes;
+    return a.rank - b.rank || a.likes - b.likes;
   }).forEach(rank => {
-    console.log(rank.hashtag, rank.likes, rank.posts);
+    table.row([
+      chalk.gray(rank.tag),
+      rank.likes,
+      rank.posts > 5 ? chalk.bold.green(rank.posts) : chalk.gray(rank.posts),
+      rank.rank
+    ]);
   });
+
+  table.line();
+  table.row(headings);
+
+  console.log(table.render());
 }
 
 function exec(prom) {
@@ -86,7 +114,7 @@ function exec(prom) {
 
 switch (argv.command) {
   case 'posts':
-    return exec(updatePosts(argv.username));
+    return exec(updatePosts(argv.username, argv.count));
   case 'hashtags':
     return exec(hashtagStats());
   default:

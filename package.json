@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/catdad-experiments/insta-analytics#readme",
   "dependencies": {
+    "chalk": "^2.4.1",
+    "fancy-text-table": "^1.0.0",
     "fs-extra": "^7.0.0",
     "puppeteer": "^1.6.2",
     "rootrequire": "^1.0.0",
