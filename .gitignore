@@ -36,3 +36,6 @@ Temporary Items
 node_modules/
 coverage/
 .nyc_output/
+
+# some stuff that doesn't need to be committed right now
+data/
