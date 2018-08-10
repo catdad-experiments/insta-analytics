@@ -35,6 +35,12 @@ async function map(arr, func) {
   return newArr;
 }
 
+function getMaxLikes(...posts) {
+  return posts.reduce((memo, post) => {
+    return post.likes > memo ? post.likes : memo;
+  }, 0);
+}
+
 async function getPostObj(post) {
   return Object.assign({ post }, await lib.getStats(post));
 }
@@ -105,6 +111,51 @@ async function hashtagStats() {
   console.log(table.render());
 }
 
+function Arr(size) {
+  return Array.apply(null, Array(size)).map(() => {});
+}
+
+function createDailyTable(posts, maxLikes, day) {
+  const rows = 6;
+  const one = chalk.yellow('⚫');
+  const zero = chalk.blue('.');
+
+  const table = fancyTable();
+  const headings = bold([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  table.title(chalk.cyan(day));
+  table.row(headings);
+
+  const hours = posts.reduce((memo, post) => {
+    const date = new Date(post.datetime);
+    const hour = date.getHours();
+    memo[hour] = memo[hour] || [];
+
+    memo[hour].push(post);
+
+    return memo;
+  }, []).map(hour => {
+    const likes = Math.round(mean(...hour.map(p => p.likes)));
+    const ticks = Math.round(likes / maxLikes * rows);
+
+    return {
+      likes: likes,
+      ticks: Arr(rows).map((i, idx) => idx > ticks ? zero : one).reverse()
+    };
+  });
+
+  Arr(rows).forEach((n, i) => {
+    const row = headings.map(function (n, j) {
+      return hours[j] ? hours[j].ticks[i] : zero;
+    });
+
+    table.row(row);
+  });
+
+  table.title(Arr(75).map(() => '-').join(''));
+
+  return table.render();
+}
+
 async function times() {
   const names = {
     // Sunday - Saturday : 0 - 6
@@ -117,12 +168,15 @@ async function times() {
     '6': 'Saturday',
   };
 
+  const data = await readAllData();
+  const maxLikes = getMaxLikes(...data);
+
   const table = fancyTable();
   const headings = bold(['day', 'posts', 'avg. likes']);
 
   table.row(headings);
 
-  const dailyHours = (await readAllData()).reduce((memo, post) => {
+  data.reduce((memo, post) => {
     const date = new Date(post.datetime);
     const day = date.getDay();
 
@@ -133,6 +187,8 @@ async function times() {
       day: names[idx],
       count: day.length,
       avgLikes: Math.round(mean(...day.map(d => d.likes))),
+      posts: day,
+      dailyTable: createDailyTable(day, maxLikes, names[idx])
     };
   }).forEach(summary => {
     table.row([
@@ -140,6 +196,8 @@ async function times() {
       summary.count,
       summary.avgLikes
     ]);
+
+    console.log(summary.dailyTable, '\n');
   });
 
   table.line();
