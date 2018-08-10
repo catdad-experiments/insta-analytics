@@ -105,6 +105,48 @@ async function hashtagStats() {
   console.log(table.render());
 }
 
+async function times() {
+  const names = {
+    // Sunday - Saturday : 0 - 6
+    '0': 'Sunday',
+    '1': 'Monday',
+    '2': 'Tuesday',
+    '3': 'Wednesday',
+    '4': 'Thursday',
+    '5': 'Friday',
+    '6': 'Saturday',
+  };
+
+  const table = fancyTable();
+  const headings = bold(['day', 'posts', 'avg. likes']);
+
+  table.row(headings);
+
+  const dailyHours = (await readAllData()).reduce((memo, post) => {
+    const date = new Date(post.datetime);
+    const day = date.getDay();
+
+    memo[day].push(post);
+    return memo;
+  }, [[], [], [], [], [], [], []]).map((day, idx) => {
+    return {
+      day: names[idx],
+      count: day.length,
+      avgLikes: Math.round(mean(...day.map(d => d.likes))),
+    };
+  }).forEach(summary => {
+    table.row([
+      summary.day,
+      summary.count,
+      summary.avgLikes
+    ]);
+  });
+
+  table.line();
+
+  console.log(table.render());
+}
+
 function exec(prom) {
   prom.then(async () => {
     console.log('done');
@@ -121,6 +163,8 @@ switch (argv.command) {
     return exec(updatePosts(argv.username, argv.count));
   case 'hashtags':
     return exec(hashtagStats());
+  case 'times':
+    return exec(times());
   default:
     return console.log('no command found');
 }
