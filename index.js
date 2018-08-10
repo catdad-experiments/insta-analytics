@@ -122,7 +122,10 @@ async function getStats(post) {
   const link = `https://www.instagram.com/p/${post}/`;
   const page = await goto(link);
 
-  const likesStr = await page.$$eval('[role=button]', els => els.filter(el => /[0-9]+ likes/.test(el.innerText)).map(el => el.innerText)[0]);
+  const likesStr = await page.$$eval('[role=button]', els => {
+    return els.filter(el => /[0-9,]+ likes/.test(el.innerText))
+      .map(el => el.innerText.replace(/,/g, ''))[0];
+  });
   const hashtags = await page.$$eval('[href*="/explore/tags"]', els => els.map(el => el.innerText));
   const datetime = await page.$eval('[datetime]', el => el.getAttribute('datetime'));
 
