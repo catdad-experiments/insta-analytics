@@ -21,6 +21,10 @@ function mean(...args) {
   return args.reduce((a, b) => a + b) / args.length;
 }
 
+function bold(arr) {
+  return arr.map(i => chalk.bold(i));
+}
+
 async function map(arr, func) {
   let newArr = [];
 
@@ -48,12 +52,14 @@ async function updatePosts(username, count) {
   });
 }
 
-async function hashtagStats() {
-  const files = await fs.readdir(dataDir);
-
-  const data = await map(files, async file => {
+async function readAllData() {
+  return await map(await fs.readdir(dataDir), async file => {
     return JSON.parse(await fs.readFile(path.resolve(dataDir, file), 'utf8'));
   });
+}
+
+async function hashtagStats() {
+  const data = await readAllData();
 
   const hashtags = data.reduce((memo, item) => {
     item.hashtags.forEach(tag => {
@@ -65,12 +71,7 @@ async function hashtagStats() {
   }, {});
 
   const table = fancyTable();
-  const headings = [
-    chalk.bold('hashtag'),
-    chalk.bold('average likes'),
-    chalk.bold('posts'),
-    chalk.bold('rank'),
-  ];
+  const headings = bold(['hashtag', 'average likes', 'posts', 'rank']);
 
   table.row(headings);
   table.line();
