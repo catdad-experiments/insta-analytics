@@ -58,13 +58,13 @@ async function scrollAndLoad(page) {
         page.removeListener('response', onRes);
 
         resolve();
-      }, 500);
+      }, 800);
     }
 
     page.on('request', onReq);
     page.on('response', onRes);
 
-    doneTimer = setTimeout(() => onZero(), 1000);
+    doneTimer = setTimeout(() => onZero(), 2000);
   });
 
   const pagePromise = page.evaluate(() => {
