@@ -117,8 +117,8 @@ function Arr(size) {
 
 function createDailyTable(posts, maxLikes, day) {
   const rows = 6;
-  const one = chalk.yellow('⚫');
-  const zero = chalk.blue('.');
+  const one = chalk.magenta('█');
+  const zero = chalk.grey('·');
 
   const table = fancyTable();
   const headings = bold([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
