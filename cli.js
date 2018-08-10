@@ -6,6 +6,7 @@ const argv = require('yargs')
 .option('command', { type: 'string' })
 .option('username', { type: 'string' })
 .option('count', { type: 'number', default: 12 })
+.options('data', { type: 'string', default: 'data/posts' })
 .argv;
 
 const root = require('rootrequire');
@@ -14,7 +15,7 @@ const fancyTable = require('fancy-text-table');
 const chalk = require('chalk');
 const lib = require('.');
 
-const dataDir = path.resolve(root, 'data/posts');
+const dataDir = path.resolve(root, 'data', argv.data);
 
 function mean(...args) {
   return args.reduce((a, b) => a + b) / args.length;
@@ -41,7 +42,7 @@ async function updatePosts(username, count) {
 
   await map(posts, async post => {
     await fs.writeFile(
-      path.resolve(root, `data/posts/${post}.json`),
+      path.resolve(dataDir, `${post}.json`),
       JSON.stringify(await getPostObj(post), null, 2)
     );
   });
