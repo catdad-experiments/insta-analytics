@@ -6,7 +6,7 @@ const argv = require('yargs')
 .option('command', { type: 'string' })
 .option('username', { type: 'string' })
 .option('count', { type: 'number', default: 12 })
-.options('data', { type: 'string', default: 'data/posts' })
+.options('data', { type: 'string' })
 .argv;
 
 const root = require('rootrequire');
@@ -14,7 +14,7 @@ const fs = require('fs-extra');
 const lib = require('.');
 const { map } = require('./commands/utils.js');
 
-const dataDir = path.resolve(root, 'data', argv.data);
+const dataDir = path.resolve(root, 'data', argv.data || argv.username || 'posts');
 
 async function getPostObj(post) {
   return Object.assign({ post }, await lib.getStats(post));
