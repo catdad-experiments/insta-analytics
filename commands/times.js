@@ -50,21 +50,22 @@ function createDailyTable(posts, maxLikes, day) {
   return table.render();
 }
 
-module.exports = async function times(dataDir) {
-  const names = {
-    // Sunday - Saturday : 0 - 6
-    '0': 'Sunday',
-    '1': 'Monday',
-    '2': 'Tuesday',
-    '3': 'Wednesday',
-    '4': 'Thursday',
-    '5': 'Friday',
-    '6': 'Saturday',
-  };
+const names = {
+  // Sunday - Saturday : 0 - 6
+  '0': 'Sunday',
+  '1': 'Monday',
+  '2': 'Tuesday',
+  '3': 'Wednesday',
+  '4': 'Thursday',
+  '5': 'Friday',
+  '6': 'Saturday',
+};
 
+module.exports = async function times(dataDir) {
   const data = await readAllData(dataDir);
   const maxLikes = getMaxLikes(...data);
 
+  let result = '';
   const table = fancyTable();
   const headings = bold(['day', 'posts', 'avg. likes']);
 
@@ -91,10 +92,8 @@ module.exports = async function times(dataDir) {
       summary.avgLikes
     ]);
 
-    console.log(summary.dailyTable, '\n');
+    result += summary.dailyTable + '\n\n';
   });
 
-  table.line();
-
-  console.log(table.render());
+  return result + '\n' + table.render();
 };
